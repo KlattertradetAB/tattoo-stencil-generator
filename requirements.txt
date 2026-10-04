@@ -1,3 +1,185 @@
-opencv-python-headless
-Pillow
-numpy
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tattoo Stencil Demo</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f4f6fb;
+        color: #1f2430;
+      }
+      .container {
+        max-width: 960px;
+        margin: 40px auto;
+        padding: 24px;
+      }
+      .card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+        padding: 24px;
+      }
+      h1 {
+        margin-top: 0;
+      }
+      .controls {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 20px;
+      }
+      label {
+        display: flex;
+        flex-direction: column;
+        font-size: 14px;
+        gap: 8px;
+      }
+      input, select, button, a.button {
+        font: inherit;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid #d9dfe9;
+      }
+      button, a.button {
+        background: #203867;
+        color: white;
+        border: none;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+      }
+      .preview-wrap {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        align-items: start;
+      }
+      .preview-box {
+        border: 1px solid #e5e7ee;
+        background: white;
+        border-radius: 12px;
+        min-height: 300px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+      }
+      img {
+        max-width: 100%;
+        max-height: 600px;
+        border-radius: 8px;
+      }
+      .hidden {
+        display: none;
+      }
+      .status {
+        margin-top: 16px;
+        min-height: 24px;
+        color: #49586d;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="card">
+        <h1>Tattoo Stencil Demo</h1>
+
+        <div class="controls">
+          <label>
+            Upload reference image
+            <input id="fileInput" type="file" accept="image/*" />
+          </label>
+
+          <label>
+            Style
+            <select id="styleSelect">
+              <option value="fine">Fine</option>
+              <option value="medium" selected>Medium</option>
+              <option value="bold">Bold</option>
+            </select>
+          </label>
+
+          <label>
+            Outline color (r,g,b)
+            <input id="outlineColor" type="text" value="18,18,26" placeholder="18,18,26" />
+          </label>
+
+          <label>
+            Hatch color (r,g,b)
+            <input id="hatchColor" type="text" value="120,140,255" placeholder="120,140,255" />
+          </label>
+        </div>
+
+        <button id="generateBtn" type="button">Generate stencil</button>
+        <a id="downloadLink" class="button hidden" href="#" download="stencil.png">Download PNG</a>
+
+        <div id="status" class="status"></div>
+
+        <div class="preview-wrap">
+          <div class="preview-box">
+            <img id="previewImage" class="hidden" alt="Stencil output" />
+          </div>
+          <div class="preview-box">
+            <div id="placeholder">No stencil generated yet.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const fileInput = document.getElementById('fileInput');
+      const styleSelect = document.getElementById('styleSelect');
+      const outlineColor = document.getElementById('outlineColor');
+      const hatchColor = document.getElementById('hatchColor');
+      const generateBtn = document.getElementById('generateBtn');
+      const previewImage = document.getElementById('previewImage');
+      const status = document.getElementById('status');
+      const downloadLink = document.getElementById('downloadLink');
+      const placeholder = document.getElementById('placeholder');
+
+      generateBtn.addEventListener('click', async () => {
+        const file = fileInput.files[0];
+        if (!file) {
+          status.textContent = 'Please choose a reference image first.';
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('style', styleSelect.value);
+        if (outlineColor.value.trim()) formData.append('outline_color', outlineColor.value.trim());
+        if (hatchColor.value.trim()) formData.append('hatch_color', hatchColor.value.trim());
+
+        status.textContent = 'Generating stencil...';
+
+        try {
+          const response = await fetch('/api/stencil', {
+            method: 'POST',
+            body: formData,
+          });
+
+          if (!response.ok) {
+            const text = await response.text();
+            throw new Error(text || 'Stencil generation failed');
+          }
+
+          const blob = await response.blob();
+          const url = URL.createObjectURL(blob);
+          previewImage.src = url;
+          previewImage.classList.remove('hidden');
+          placeholder.classList.add('hidden');
+          downloadLink.href = url;
+          downloadLink.classList.remove('hidden');
+          downloadLink.download = 'stencil.png';
+          status.textContent = 'Stencil ready.';
+        } catch (error) {
+          status.textContent = error.message || 'Unexpected error.';
+        }
+      });
+    </script>
+  </body>
+</html>

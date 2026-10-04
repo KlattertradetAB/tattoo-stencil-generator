@@ -1,0 +1,58 @@
+from __future__ import annotations
+
+import os
+import tempfile
+from pathlib import Path
+
+from fastapi import FastAPI, File, Form, UploadFile
+from fastapi.responses import FileResponse, HTMLResponse
+
+from app.stencil_generator import generate_stencil
+from app.styles import parse_color
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+INDEX_HTML = (BASE_DIR / "templates" / "index.html").read_text(encoding="utf-8")
+
+app = FastAPI(title="Tattoo Stencil Demo")
+
+
+@app.get("/", response_class=HTMLResponse)
+async def index() -> HTMLResponse:
+    return HTMLResponse(INDEX_HTML)
+
+
+@app.post("/api/stencil")
+async def generate_stencil_api(
+    file: UploadFile = File(...),
+    style: str = Form("medium"),
+    line_weight: int | None = Form(None),
+    hatch_spacing: int | None = Form(None),
+    outline_color: str | None = Form(None),
+    hatch_color: str | None = Form(None),
+    guide_bg: str | None = Form(None),
+    guide_border: str | None = Form(None),
+):
+    suffix = Path(file.filename).suffix or ".png"
+    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as src:
+        contents = await file.read()
+        src.write(contents)
+        source_path = src.name
+
+    output_path = source_path + "_stencil.png"
+    try:
+        generate_stencil(
+            source_path,
+            output_path,
+            style=style,
+            line_weight=line_weight,
+            hatch_spacing=hatch_spacing,
+            outline_color=parse_color(outline_color) if outline_color else None,
+            hatch_color=parse_color(hatch_color) if hatch_color else None,
+            guide_bg=parse_color(guide_bg) if guide_bg else None,
+            guide_border=parse_color(guide_border) if guide_border else None,
+        )
+        return FileResponse(output_path, media_type="image/png", filename="stencil.png")
+    finally:
+        for temp_path in (source_path, output_path):
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
