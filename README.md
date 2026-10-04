@@ -1,38 +1,50 @@
 # Tattoo Stencil Generator
 
-Ett enkelt Python-projekt för att konvertera referensbilder till tekniska tatueringsstenciler med vit bakgrund, konturlinjer och skuggningsguide.
+Ett enkelt Python-projekt som konverterar referensbilder till tekniska tatueringsstenciler med vit bakgrund, tydliga konturer och en skuggningsguide i rutnät.
 
 ## Syfte
-Det här projektet bygger en fristående funktion som:
-- läser in en bild
-- isolerar motivet från bakgrunden
-- skapar en ren vit stencilbakgrund
-- lägger till tydliga konturer
-- genererar ett rutnät/crosshatch-shadingguide
-- exporterar en användbar stencil PNG
 
-## Snabbstart
+Projektet används för att skapa stencil-bilder i en tydlig och konsekvent stil:
+- ren, kritvit bakgrund
+- motiv centrerat i bilden
+- tydliga konturlinjer
+- teknisk shading guide med hatching/rutnät
+- liten guidebox med texten `SHADING GUIDE`
 
-1. Skapa en virtuell miljö
+Detta är ett enkelt MVP för vidareutveckling och anpassning.
+
+## Installation
+
+1. Klona repot
+   ```bash
+   git clone https://github.com/KlattertradetAB/tattoo-stencil-generator.git
+   cd tattoo-stencil-generator
+   ```
+
+2. Skapa en virtuell miljö
    ```bash
    python -m venv .venv
    source .venv/bin/activate
    ```
 
-2. Installera beroenden
+3. Installera beroenden
    ```bash
    pip install -r requirements.txt
    ```
 
-3. Generera stencil från en bild
-   ```bash
-   python -m app.main --input path/to/reference.jpg --output output/stencil.png
-   ```
+## Användning
 
-4. Exempel med standardinställningar
-   ```bash
-   python -m app.main --input examples/input.jpg --output examples/output.png
-   ```
+Kör generatorn från terminalen:
+
+```bash
+python -m app.main --input path/to/reference-image.jpg --output output/stencil.png
+```
+
+Exempel:
+
+```bash
+python -m app.main --input examples/reference.jpg --output output/result.png
+```
 
 ## Projektstruktur
 
@@ -44,28 +56,38 @@ Det här projektet bygger en fristående funktion som:
 │   └── stencil_generator.py
 ├── tests/
 │   └── test_stencil_generator.py
-├── requirements.txt
 ├── .gitignore
 ├── README.md
-└── examples/
+├── requirements.txt
+└── output/
 ```
 
 ## Funktionalitet
 
-Generatorn bygger ett stencil i den stil du beskrev:
-- kritvit bakgrund
-- mörka/stenclblåa konturlinjer
-- teknisk skuggningskarta med rutnät
-- guide-box med texten `SHADING GUIDE`
+Generatorn gör följande:
+- läser in en bild
 - centrering av motivet
+- isolerar motivet från bakgrund
+- skapar linjearbete med konturer
+- lägger till rutnätshatching som skugg-guide
+- lägger till en liten `SHADING GUIDE`-ruta i hörnet
+- sparar resultatet som PNG
 
-## Kommande funktioner
+## Kända begränsningar
 
-Du kan utöka projektet med:
-- webb-API (FastAPI)
-- upload via frontend
-- justerbara inställningar för line weight, hatch density och guidebox
-- export till SVG eller PDF
+Detta är en första version med fokus på enkel, stabil funktionalitet. För mer avancerad bildbehandling kan projektet senare utökas med:
+- bättre maskning av motivet
+- fler inställningar för stencilstil
+- bättre shading-kontroll
+- API eller web-gränssnitt
+- stöd för fler bildformat och exportalternativ
+
+## Testning
+
+```bash
+pytest
+```
 
 ## Licens
-Det här projektet är tänkt som ett startprojekt för vidare utveckling.
+
+Detta projekt är för utveckling och testning i eget användningsområde.
